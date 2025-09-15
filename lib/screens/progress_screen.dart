@@ -69,7 +69,6 @@ class ProgressScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    swapAnimationDuration: const Duration(milliseconds: 900),
                     swapAnimationCurve: Curves.easeInOut,
                   ),
                 ),
