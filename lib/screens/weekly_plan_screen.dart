@@ -1,85 +1,111 @@
 import 'package:flutter/material.dart';
-import '../widgets/glass_card.dart';
 
-class WeeklyPlanScreen extends StatelessWidget {
-  const WeeklyPlanScreen({super.key});
+class PlanScreen extends StatefulWidget {
+  const PlanScreen({super.key});
+
+  @override
+  State<PlanScreen> createState() => _PlanScreenState();
+}
+
+class _PlanScreenState extends State<PlanScreen> {
+  final Map<String, List<String>> _workouts = {
+    "Monday": ["Pushups", "Squats", "Plank"],
+    "Wednesday": ["Pullups", "Lunges", "Crunches"],
+    "Friday": ["Burpees", "Deadlifts", "Mountain Climbers"],
+  };
+
+  String? _expandedDay;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
+          colors: [Color(0xFF0D0D0D), Color(0xFF1E1E2E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF102030), Color(0xFF0D0D1F)],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 56, 16, 16),
       child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Weekly Plan',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                children: const [
-                  _DayPlan(day: 'Monday', workout: 'Cardio + Core'),
-                  SizedBox(height: 12),
-                  _DayPlan(day: 'Tuesday', workout: 'Upper Body Strength'),
-                  SizedBox(height: 12),
-                  _DayPlan(day: 'Wednesday', workout: 'Yoga + Flexibility'),
-                  SizedBox(height: 12),
-                  _DayPlan(day: 'Thursday', workout: 'Lower Body Strength'),
-                  SizedBox(height: 12),
-                  _DayPlan(day: 'Friday', workout: 'HIIT 20 min'),
-                  SizedBox(height: 12),
-                  _DayPlan(day: 'Saturday', workout: 'Outdoor Run'),
-                  SizedBox(height: 12),
-                  _DayPlan(day: 'Sunday', workout: 'Rest & Recovery'),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DayPlan extends StatelessWidget {
-  final String day;
-  final String workout;
-  const _DayPlan({required this.day, required this.workout, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      child: Row(
-        children: [
-          const Icon(Icons.calendar_today, color: Colors.purpleAccent, size: 28),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(day,
-                    style: const TextStyle(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Weekly Plan",
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(workout, style: const TextStyle(color: Colors.white70)),
-              ],
-            ),
+                        fontWeight: FontWeight.bold,
+                      )),
+              const SizedBox(height: 20),
+
+              Expanded(
+                child: ListView(
+                  children: _workouts.keys.map((day) {
+                    final isExpanded = _expandedDay == day;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _expandedDay = isExpanded ? null : day;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A1A),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(day,
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold)),
+                                Icon(
+                                  isExpanded
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                  color: Colors.white70,
+                                ),
+                              ],
+                            ),
+                            AnimatedCrossFade(
+                              firstChild: const SizedBox.shrink(),
+                              secondChild: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: _workouts[day]!
+                                    .map((w) => Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: Text("• $w",
+                                              style: const TextStyle(
+                                                  color: Colors.white70)),
+                                        ))
+                                    .toList(),
+                              ),
+                              crossFadeState: isExpanded
+                                  ? CrossFadeState.showSecond
+                                  : CrossFadeState.showFirst,
+                              duration: const Duration(milliseconds: 400),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ),
-          const Icon(Icons.chevron_right, color: Colors.white70),
-        ],
+        ),
       ),
     );
   }
