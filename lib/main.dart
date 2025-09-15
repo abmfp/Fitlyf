@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'screens/home_screen.dart';
 import 'screens/progress_screen.dart';
 import 'screens/plan_screen.dart';
@@ -19,12 +20,11 @@ class FitLyfApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0D0D0D),
-        textTheme: GoogleFonts.poppinsTextTheme(
-          ThemeData.dark().textTheme,
-        ),
-        colorScheme: ColorScheme.fromSwatch().copyWith(
-          secondary: const Color(0xFF9B5DE5),
+        scaffoldBackgroundColor: const Color(0xFF0D0D1A),
+        textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.purpleAccent,
+          brightness: Brightness.dark,
         ),
       ),
       home: const MainPage(),
@@ -42,7 +42,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
+  final List<Widget> _screens = const [
     HomeScreen(),
     ProgressScreen(),
     PlanScreen(),
@@ -58,20 +58,33 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
-        transitionBuilder: (child, animation) {
-          final offsetAnimation = Tween<Offset>(
-            begin: const Offset(0.1, 0.0),
-            end: Offset.zero,
-          ).animate(animation);
-          return SlideTransition(
-            position: offsetAnimation,
-            child: FadeTransition(opacity: animation, child: child),
-          );
-        },
-        child: _pages[_selectedIndex],
-      ),
+      body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const
+        backgroundColor: const Color(0xFF1A1A1A),
+        selectedItemColor: Colors.purpleAccent,
+        unselectedItemColor: Colors.white70,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.show_chart),
+            label: "Progress",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: "Plan",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "Profile",
+          ),
+        ],
+      ),
+    );
+  }
+}
