@@ -1,118 +1,158 @@
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 800))
-          ..forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Widget _animatedGoalCard(String text, int index) {
-    return FadeTransition(
-      opacity: CurvedAnimation(parent: _controller, curve: Interval(0.2 * index, 1)),
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.2),
-          end: Offset.zero,
-        ).animate(
-            CurvedAnimation(parent: _controller, curve: Interval(0.2 * index, 1))),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(text,
-              style: const TextStyle(color: Colors.white70, fontSize: 16)),
-        ),
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0D0D0D), Color(0xFF1E1E2E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("FitLyf",
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      )),
-              const SizedBox(height: 10),
-              Text("Welcome back, champ 👊",
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[400],
-                      )),
-              const SizedBox(height: 30),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _quickAction(Icons.fitness_center, "Workouts"),
-                  _quickAction(Icons.local_fire_department, "Calories"),
-                  _quickAction(Icons.timer, "Tracker"),
-                ],
-              ),
-              const SizedBox(height: 30),
-
-              Text("Today’s Goals",
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      )),
-              const SizedBox(height: 15),
-
-              _animatedGoalCard("🏋️  Complete 3 sets of Pushups", 1),
-              _animatedGoalCard("🔥 Burn 500 kcal", 2),
-              _animatedGoalCard("🚶 Walk 10,000 steps", 3),
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF6A1B9A),
+              Color(0xFF4A148C),
             ],
           ),
         ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Calendar Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildDayCircle("Mon", "8", true),
+                    _buildDayCircle("Tue", "9", false),
+                    _buildDayCircle("Wed", "10", false),
+                    _buildDayCircle("Thu", "11", false),
+                    _buildDayCircle("Fri", "12", false),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Greeting
+                const Text(
+                  "Get ready, User",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  "Here's your plan for Monday",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Workout Card
+                _buildCard(
+                  title: "Chest & Biceps",
+                  subtitle: "1 exercise",
+                  icon: Icons.arrow_forward,
+                  onTap: () {},
+                ),
+                const SizedBox(height: 16),
+
+                // Weight Card
+                _buildCard(
+                  title: "Weight for 8 Sep",
+                  subtitle: "No Entry",
+                  icon: Icons.add,
+                  onTap: () {},
+                ),
+                const SizedBox(height: 16),
+
+                // Weekly Goal Card
+                _buildCard(
+                  title: "Day 0 / 5",
+                  subtitle: "Let's start the week strong!",
+                  icon: Icons.local_fire_department,
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _quickAction(IconData icon, String label) {
+  Widget _buildDayCircle(String day, String date, bool isSelected) {
     return Column(
       children: [
-        CircleAvatar(
-          radius: 30,
-          backgroundColor: const Color(0xFF9B5DE5),
-          child: Icon(icon, color: Colors.white, size: 28),
+        Text(
+          day,
+          style: const TextStyle(color: Colors.white70, fontSize: 14),
         ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(color: Colors.white)),
+        const SizedBox(height: 6),
+        CircleAvatar(
+          backgroundColor: isSelected ? Colors.white : Colors.transparent,
+          radius: 22,
+          child: Text(
+            date,
+            style: TextStyle(
+              color: isSelected ? Colors.black : Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+          ),
+          InkWell(
+            onTap: onTap,
+            child: CircleAvatar(
+              backgroundColor: Colors.white.withOpacity(0.2),
+              child: Icon(icon, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
