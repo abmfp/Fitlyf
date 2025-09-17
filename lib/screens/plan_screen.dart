@@ -1,109 +1,104 @@
 import 'package:flutter/material.dart';
 
-class PlanScreen extends StatefulWidget {
+class PlanScreen extends StatelessWidget {
   const PlanScreen({super.key});
 
-  @override
-  State<PlanScreen> createState() => _PlanScreenState();
-}
-
-class _PlanScreenState extends State<PlanScreen> {
-  final Map<String, List<String>> _workouts = {
-    "Monday": ["Pushups", "Squats", "Plank"],
-    "Wednesday": ["Pullups", "Lunges", "Crunches"],
-    "Friday": ["Burpees", "Deadlifts", "Mountain Climbers"],
-  };
-
-  String? _expandedDay;
+  final List<Map<String, String>> weeklyPlan = const [
+    {"day": "Monday", "workout": "Chest & Biceps"},
+    {"day": "Tuesday", "workout": "Back & Triceps"},
+    {"day": "Wednesday", "workout": "Legs & Shoulders"},
+    {"day": "Thursday", "workout": "Rest"},
+    {"day": "Friday", "workout": "Chest & Back"},
+    {"day": "Saturday", "workout": "Cardio & Abs"},
+    {"day": "Sunday", "workout": "Active Rest"},
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0D0D0D), Color(0xFF1E1E2E)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF6A1B9A),
+              Color(0xFF4A148C),
+            ],
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Weekly Plan",
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      )),
-              const SizedBox(height: 20),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title
+                const Text(
+                  "Weekly Plan",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
 
-              Expanded(
-                child: ListView(
-                  children: _workouts.keys.map((day) {
-                    final isExpanded = _expandedDay == day;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _expandedDay = isExpanded ? null : day;
-                        });
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
+                // Plan List
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: weeklyPlan.length,
+                    itemBuilder: (context, index) {
+                      final dayPlan = weeklyPlan[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 14),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A1A),
-                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(18),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            // Day + Workout
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(day,
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold)),
-                                Icon(
-                                  isExpanded
-                                      ? Icons.expand_less
-                                      : Icons.expand_more,
-                                  color: Colors.white70,
+                                Text(
+                                  dayPlan["day"]!,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  dayPlan["workout"]!,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white70,
+                                  ),
                                 ),
                               ],
                             ),
-                            AnimatedCrossFade(
-                              firstChild: const SizedBox.shrink(),
-                              secondChild: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: _workouts[day]!
-                                    .map((w) => Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
-                                          child: Text("• $w",
-                                              style: const TextStyle(
-                                                  color: Colors.white70)),
-                                        ))
-                                    .toList(),
-                              ),
-                              crossFadeState: isExpanded
-                                  ? CrossFadeState.showSecond
-                                  : CrossFadeState.showFirst,
-                              duration: const Duration(milliseconds: 400),
+                            // Edit Button
+                            IconButton(
+                              icon: const Icon(Icons.edit,
+                                  color: Colors.white70),
+                              onPressed: () {
+                                // TODO: Implement edit functionality
+                              },
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
