@@ -1,231 +1,166 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/progress_provider.dart';
+import '../models/workout_log.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final progress = Provider.of<ProgressProvider>(context);
+    final today = DateTime.now();
+
+    // Filter today's logs
+    final todayLogs = progress.logs
+        .where((log) =>
+            log.date.year == today.year &&
+            log.date.month == today.month &&
+            log.date.day == today.day)
+        .toList();
+
+    final completed = todayLogs.where((log) => log.completed).length;
+    final total = todayLogs.length;
+
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF6A1B9A),
-              Color(0xFF4A148C),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                const Text(
-                  "Your Progress",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Your Progress",
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      )),
+              const SizedBox(height: 20),
+
+              // Weight Analytics
+              Card(
+                color: Colors.white.withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  width: double.infinity,
+                  child: progress.weights.isEmpty
+                      ? Center(
+                          child: Text(
+                            "Log more to see your chart!\n(Tap here for details)",
+                            style: TextStyle(color: Colors.white70),
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      : Text(
+                          "Weight data available: ${progress.weights.length} entries",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Today's Stats
+              Text("Today's Stats: Chest & Biceps",
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      )),
+              const SizedBox(height: 10),
+              Card(
+                color: Colors.white.withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          Text("$completed / $total",
+                              style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
+                          const SizedBox(height: 4),
+                          const Text("Exercises Done",
+                              style: TextStyle(color: Colors.white70)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                              total == 0
+                                  ? "0%"
+                                  : "${((completed / total) * 100).toStringAsFixed(0)}%",
+                              style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
+                          const SizedBox(height: 4),
+                          const Text("Completion",
+                              style: TextStyle(color: Colors.white70)),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 20),
 
-                // Weight Analytics Card
-                _buildCard(
-                  title: "Weight Analytics",
-                  subtitle: "Log more to see your chart!\n(Tap here for details)",
-                  center: true,
-                  onTap: () {
-                    // TODO: Navigate to detailed chart
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // Today's Stats Title
-                const Text(
-                  "Today's Stats: Chest & Biceps",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Stats Card
-                _buildStatsCard(),
-                const SizedBox(height: 20),
-
-                // Workout Streak Title
-                const Text(
-                  "Workout Streak",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Streak Calendar
-                _buildCard(
-                  title: "September 2025",
-                  customChild: _buildCalendar(),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCard({
-    required String title,
-    String? subtitle,
-    bool center = false,
-    VoidCallback? onTap,
-    Widget? customChild,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: customChild ??
-            Column(
-              crossAxisAlignment:
-                  center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: center ? TextAlign.center : TextAlign.start,
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+              // Workout Streak
+              Text("Workout Streak",
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      )),
+              const SizedBox(height: 10),
+              Card(
+                color: Colors.white.withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                child: TableCalendar(
+                  firstDay: DateTime.utc(2025, 1, 1),
+                  lastDay: DateTime.utc(2025, 12, 31),
+                  focusedDay: today,
+                  calendarStyle: CalendarStyle(
+                    todayDecoration: BoxDecoration(
+                      color: Colors.purpleAccent,
+                      shape: BoxShape.circle,
                     ),
-                    textAlign: center ? TextAlign.center : TextAlign.start,
+                    defaultTextStyle: const TextStyle(color: Colors.white),
+                    weekendTextStyle: const TextStyle(color: Colors.white),
                   ),
-                ]
-              ],
-            ),
-      ),
-    );
-  }
-
-  Widget _buildStatsCard() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [
-          Column(
-            children: [
-              Text(
-                "0 / 1",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                "Exercises Done",
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
-          Column(
-            children: [
-              Text(
-                "0%",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                "Completion",
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalendar() {
-    return Column(
-      children: [
-        const SizedBox(height: 10),
-        const Text(
-          "September 2025",
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.white70,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: 30,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            mainAxisSpacing: 6,
-            crossAxisSpacing: 6,
-          ),
-          itemBuilder: (context, index) {
-            // Fake streak data: mark some days as done or missed
-            bool missed = [1, 2, 3, 5, 6, 8].contains(index + 1);
-            return Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: missed
-                    ? Colors.red.withOpacity(0.8)
-                    : Colors.transparent,
-              ),
-              child: Center(
-                child: Text(
-                  "${index + 1}",
-                  style: TextStyle(
-                    color: missed ? Colors.white : Colors.white70,
-                    fontSize: 13,
+                  headerStyle: const HeaderStyle(
+                    titleCentered: true,
+                    formatButtonVisible: false,
+                    titleTextStyle: TextStyle(color: Colors.white),
+                  ),
+                  calendarBuilders: CalendarBuilders(
+                    markerBuilder: (context, day, events) {
+                      final hasWorkout = progress.logs.any((log) =>
+                          log.date.year == day.year &&
+                          log.date.month == day.month &&
+                          log.date.day == day.day &&
+                          log.completed);
+                      if (hasWorkout) {
+                        return const Icon(Icons.check_circle,
+                            color: Colors.green, size: 16);
+                      } else {
+                        return const Icon(Icons.cancel,
+                            color: Colors.redAccent, size: 16);
+                      }
+                    },
                   ),
                 ),
               ),
-            );
-          },
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 }
