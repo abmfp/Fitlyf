@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/progress_provider.dart';
-import '../models/workout_log.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../providers/workout_provider.dart';
 
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final progress = Provider.of<ProgressProvider>(context);
-    final today = DateTime.now();
+    final workoutProvider = Provider.of<WorkoutProvider>(context);
+    final workouts = workoutProvider.workouts;
 
-    // Filter today's logs
-    final todayLogs = progress.logs
-        .where((log) =>
-            log.date.year == today.year &&
-            log.date.month == today.month &&
-            log.date.day == today.day)
-        .toList();
-
-    final completed = todayLogs.where((log) => log.completed).length;
-    final total = todayLogs.length;
+    // Prepare line chart data (duration over time)
+    final lineSpots = workouts.asMap().entries.map((entry) {
+      int index = entry.key;
+      final w = entry.value;
+      return FlSpot(index.toDouble(), w.duration.toDouble());
+    }).toList();
 
     return Scaffold(
       body: SafeArea(
@@ -30,130 +25,82 @@ class ProgressScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Your Progress",
+              Text("Progress Overview",
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       )),
               const SizedBox(height: 20),
 
-              // Weight Analytics
-              Card(
-                color: Colors.white.withOpacity(0.1),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  width: double.infinity,
-                  child: progress.weights.isEmpty
-                      ? Center(
-                          child: Text(
-                            "Log more to see your chart!\n(Tap here for details)",
-                            style: TextStyle(color: Colors.white70),
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      : Text(
-                          "Weight data available: ${progress.weights.length} entries",
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 20),
+              // Workout Summary
+              _summaryCard(workouts),
 
-              // Today's Stats
-              Text("Today's Stats: Chest & Biceps",
+              const SizedBox(height: 30),
+
+              // Line Chart - Duration
+              Text("Workout Duration (mins)",
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       )),
-              const SizedBox(height: 10),
-              Card(
-                color: Colors.white.withOpacity(0.1),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Column(
-                        children: [
-                          Text("$completed / $total",
-                              style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
-                          const SizedBox(height: 4),
-                          const Text("Exercises Done",
-                              style: TextStyle(color: Colors.white70)),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                              total == 0
-                                  ? "0%"
-                                  : "${((completed / total) * 100).toStringAsFixed(0)}%",
-                              style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
-                          const SizedBox(height: 4),
-                          const Text("Completion",
-                              style: TextStyle(color: Colors.white70)),
-                        ],
+              const SizedBox(height: 12),
+              Container(
+                height: 220,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: LineChart(
+                  LineChartData(
+                    gridData: FlGridData(show: false),
+                    titlesData: FlTitlesData(show: false),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: lineSpots,
+                        isCurved: true,
+                        color: Colors.purpleAccent,
+                        barWidth: 4,
+                        dotData: FlDotData(show: true),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
 
-              // Workout Streak
-              Text("Workout Streak",
+              const SizedBox(height: 30),
+
+              // Bar Chart - Calories (placeholder)
+              Text("Calories Burned",
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       )),
-              const SizedBox(height: 10),
-              Card(
-                color: Colors.white.withOpacity(0.1),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                child: TableCalendar(
-                  firstDay: DateTime.utc(2025, 1, 1),
-                  lastDay: DateTime.utc(2025, 12, 31),
-                  focusedDay: today,
-                  calendarStyle: CalendarStyle(
-                    todayDecoration: BoxDecoration(
-                      color: Colors.purpleAccent,
-                      shape: BoxShape.circle,
+              const SizedBox(height: 12),
+              Container(
+                height: 220,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: BarChart(
+                  BarChartData(
+                    borderData: FlBorderData(show: false),
+                    gridData: FlGridData(show: false),
+                    titlesData: FlTitlesData(show: false),
+                    barGroups: List.generate(
+                      workouts.length,
+                      (i) => BarChartGroupData(x: i, barRods: [
+                        BarChartRodData(
+                          toY: (workouts[i].duration * 5).toDouble(), // dummy calories
+                          color: Colors.blueAccent,
+                          width: 16,
+                          borderRadius: BorderRadius.circular(6),
+                        )
+                      ]),
                     ),
-                    defaultTextStyle: const TextStyle(color: Colors.white),
-                    weekendTextStyle: const TextStyle(color: Colors.white),
-                  ),
-                  headerStyle: const HeaderStyle(
-                    titleCentered: true,
-                    formatButtonVisible: false,
-                    titleTextStyle: TextStyle(color: Colors.white),
-                  ),
-                  calendarBuilders: CalendarBuilders(
-                    markerBuilder: (context, day, events) {
-                      final hasWorkout = progress.logs.any((log) =>
-                          log.date.year == day.year &&
-                          log.date.month == day.month &&
-                          log.date.day == day.day &&
-                          log.completed);
-                      if (hasWorkout) {
-                        return const Icon(Icons.check_circle,
-                            color: Colors.green, size: 16);
-                      } else {
-                        return const Icon(Icons.cancel,
-                            color: Colors.redAccent, size: 16);
-                      }
-                    },
                   ),
                 ),
               ),
@@ -161,6 +108,40 @@ class ProgressScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _summaryCard(List workouts) {
+    final totalWorkouts = workouts.length;
+    final avgDuration = totalWorkouts > 0
+        ? workouts.map((w) => w.duration).reduce((a, b) => a + b) ~/ totalWorkouts
+        : 0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _stat("Workouts", "$totalWorkouts"),
+          _stat("Avg Duration", "$avgDuration min"),
+        ],
+      ),
+    );
+  }
+
+  Widget _stat(String title, String value) {
+    return Column(
+      children: [
+        Text(value,
+            style: const TextStyle(
+                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(title, style: const TextStyle(color: Colors.white70)),
+      ],
     );
   }
 }
